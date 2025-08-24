@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Zeboleke Finance - Webloans</title>
+  <style>
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; margin: 0; }
+    header { background: #fff; color: #8B0000; border-bottom: 1px solid #ddd; }
+    .container { max-width: 2000px; margin: 0 auto; padding: 0 20px; }
+    header .container { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; padding: 16px 0; }
+    header img { height: 64px; }
+    .main-title { font-size: 28px; margin: 0; color: #8B0000; }
+    .sub-title { font-size: 18px; margin: 4px 0 0 0; color: #555; }
+    main { padding: 24px 0; }
+    .toolbar { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-items: end; margin-bottom: 16px; }
+    .filters { display: flex; gap: 8px; flex-wrap: wrap; }
+    .filters label { font-size: 12px; color: #333; display: block; }
+    .filters input, .filters select { padding: 8px; font-size: 14px; }
+    .export-buttons { text-align: right; }
+    .export-buttons a { text-decoration: none; background: #8B0000; color: #fff; padding: 8px 12px; margin-left: 8px; border-radius: 4px; display: inline-block; }
+    .cards { display: grid; grid-template-columns: repeat(4, minmax(180px, 1fr)); gap: 12px; margin: 12px 0 24px; }
+    .card { background: #fff; border: 1px solid #eee; border-radius: 8px; padding: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+    .card .label { font-size: 12px; color: #666; }
+    .card .value { font-size: 22px; font-weight: 600; margin-top: 4px; }
+    table { width: 100%; border-collapse: collapse; background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    th, td { padding: 10px; border-bottom: 1px solid #eee; text-align: left; vertical-align: middle; }
+    th { background: #8B0000; color: #fff; position: sticky; top: 0; }
+    tr:hover { background: #f8f8f8; }
+    .status-success { color: green; font-weight: 600; }
+    .status-failed { color: red; font-weight: 600; }
+    .id-picture { height: 44px; width: 44px; object-fit: cover; border-radius: 4px; }
+    footer { background: #343a40; color: #fff; text-align: center; padding: 14px; margin-top: 40px; }
+    .charts { display: grid; grid-template-columns: 1fr 2fr; gap: 16px; margin-bottom: 24px; }
+    @media (max-width: 900px) { .toolbar { grid-template-columns: 1fr; } .cards { grid-template-columns: repeat(2, minmax(140px, 1fr)); } .charts { grid-template-columns: 1fr; } }
+    button {
+      background-color: #d9534f;
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      cursor: pointer;
+      border-radius: 3px;
+    }
+    button:hover {
+      background-color: #c9302c;
+    }
+    .photo-container { display: flex; align-items: center; gap: 5px; }
+    img.photo { max-height: 60px; border-radius: 4px; }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+<header>
+  <div class="container">
+    <div>
+      <h1 class="main-title">Zeboleke Finance - Webloans</h1>
+      <h2 class="sub-title">Verification Dashboard</h2>
+    </div>
+    <img src="/static/zeboleke_logo.jpg" alt="Zeboleke Finance Logo" onerror="this.style.display='none'"/>
+  </div>
+</header>
+
+<main>
+  <div class="container">
+
+    <div class="toolbar">
+      <form class="filters" method="get" action="{{ DASHBOARD_URL }}">
+        <div>
+          <label for="status">Status</label>
+          <select id="status" name="status">
+            <option value="all" {{ 'selected' if current_filters['status']|lower == 'all' else '' }}>All</option>
+            <option value="Success" {{ 'selected' if current_filters['status'] == 'Success' else '' }}>Success</option>
+            <option value="Failed" {{ 'selected' if current_filters['status'] == 'Failed' else '' }}>Failed</option>
+          </select>
+        </div>
+        <div>
+          <label for="date_from">From</label>
+          <input type="date" id="date_from" name="date_from" value="{{ current_filters['date_from'] }}"/>
+        </div>
+        <div>
+          <label for="date_to">To</label>
+          <input type="date" id="date_to" name="date_to" value="{{ current_filters['date_to'] }}"/>
+        </div>
+        <div>
+          <label for="month">Month</label>
+          <select id="month" name="month">
+            <option value=""></option>
+            {% for i,m in [(1,'Jan'),(2,'Feb'),(3,'Mar'),(4,'Apr'),(5,'May'),(6,'Jun'),(7,'Jul'),(8,'Aug'),(9,'Sep'),(10,'Oct'),(11,'Nov'),(12,'Dec')] %}
+              <option value="{{ i }}" {{ 'selected' if current_filters['month']|int == i else '' }}>{{ m }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div>
+          <label for="year">Year</label>
+          <input type="number" id="year" name="year" min="2000" max="2100" value="{{ current_filters['year'] }}"/>
+        </div>
+        <div style="display:flex; gap:8px; align-items:end;">
+          <button type="submit">Apply</button>
+          <a href="{{ DASHBOARD_URL }}" style="text-decoration:none; padding:8px 10px; border:1px solid #ccc; border-radius:4px; background:#fff;">Clear</a>
+        </div>
+      </form>
+
+      <div class="export-buttons">
+        <a href="{{ DASHBOARD_URL }}/export/csv{% if current_query %}?{{ current_query|safe }}{% endif %}">Download CSV</a>
+        <a href="{{ DASHBOARD_URL }}/export/xlsx{% if current_query %}?{{ current_query|safe }}{% endif %}">Download XLSX</a>
+        <a href="{{ DASHBOARD_URL }}/export/pdf{% if current_query %}?{{ current_query|safe }}{% endif %}">Download PDF</a>
+      </div>
+    </div>
+
+    <div class="cards">
+      <div class="card"><div class="label">Total Verifications</div><div class="value">{{ stats.total }}</div></div>
+      <div class="card"><div class="label">Success</div><div class="value">{{ stats.success }}</div></div>
+      <div class="card"><div class="label">Failed</div><div class="value">{{ stats.failed }}</div></div>
+      <div class="card"><div class="label">Most Recent</div><div class="value">{{ stats.last_date }}</div></div>
+    </div>
+
+    <div class="charts">
+      <div class="card">
+        <canvas id="pieChart"></canvas>
+      </div>
+      <div class="card">
+        <canvas id="barChart"></canvas>
+      </div>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>ID Picture</th>
+          <th>Full Name</th>
+          <th>ID Number</th>
+          <th>Cell/Email</th>
+          <th>Status</th>
+          <th>Date</th>
+          {% if is_admin %}
+          <th>Action</th>
+          {% endif %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for log in logs %}
+        <tr>
+          <td>
+            {% if log.id_photo %}
+              <img src="{{ log.id_photo }}" alt="ID Photo" class="id-picture">
+            {% else %}
+              <span class="placeholder">No ID</span>
+            {% endif %}
+
+            {% if log.selfie_photo %}
+              <img src="{{ log.selfie_photo }}" alt="Selfie Photo" class="id-picture">
+            {% else %}
+              <span class="placeholder">No Selfie</span>
+            {% endif %}
+          </td>
+          <td>{{ log.name }}</td>
+          <td>{{ log.id_number }}</td>
+          <td>{{ log.email }}</td>
+          <td class="status-{{ 'success' if log.status == 'Success' else ('failed' if log.status == 'Failed' else '') }}">{{ log.status }}</td>
+          <td>{{ log.timestamp }}</td>
+          {% if is_admin %}
+          <td><button onclick="deleteVerificationByIdNumber('{{ log.id_number }}')">Delete</button></td>
+          {% endif %}
+        </tr>
+        {% endfor %}
+        {% if logs|length == 0 %}
+        <tr><td colspan="{% if is_admin %}7{% else %}6{% endif %}" style="text-align:center; color:#666; padding:18px;">No records for the current filters.</td></tr>
+        {% endif %}
+      </tbody>
+    </table>
+
+  </div>
+</main>
+
+<footer>
+  &copy; {{ current_year }} Msizi Zulu | Verification System
+</footer>
+
+<script>
+  const pieCtx = document.getElementById('pieChart').getContext('2d');
+  new Chart(pieCtx, {
+    type: 'pie',
+    data: {
+      labels: ['Success', 'Failed'],
+      datasets: [{
+        data: [{{ stats.success }}, {{ stats.failed }}]
+      }]
+    },
+    options: { responsive: true }
+  });
+
+  const barCtx = document.getElementById('barChart').getContext('2d');
+  new Chart(barCtx, {
+    type: 'bar',
+    data: {
+      labels: {{ month_labels|tojson }},
+      datasets: [{
+        label: 'Verifications per Month',
+        data: {{ month_values|tojson }}
+      }]
+    },
+    options: {
+      responsive: true,
+      scales: { y: { beginAtZero: true } }
+    }
+  });
+</script>
+
+<script>
+function deleteVerificationByIdNumber(idNumber) {
+    if (!confirm('Are you sure you want to delete this verification? This will also remove it from the log file.')) return;
+    
+    fetch('{{ DASHBOARD_URL }}/delete_by_id_number/' + encodeURIComponent(idNumber), { method: 'DELETE' })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          alert('Verification deleted successfully.');
+          location.reload();
+        } else {
+          alert('Failed to delete: ' + (data.error || data.message || 'Unknown error'));
+        }
+      })
+      .catch(err => alert('Error: ' + err));
+}
+</script>
+
+</body>
+</html>
