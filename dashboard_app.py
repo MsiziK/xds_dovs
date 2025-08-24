@@ -1,4 +1,5 @@
 from flask import Flask, render_template, jsonify, request, send_from_directory, Response
+from flask import redirect, url_for
 import sqlite3
 import os
 from datetime import datetime
@@ -41,6 +42,10 @@ def _to_uploads_url(path_value):
 def uploaded_file(filename):
     return send_from_directory(UPLOAD_FOLDER, filename)
 
+@app.route("/")
+def root():
+    #Redirect root requests to the main dashboard
+    return redirect(url_for("index"))
 
 # ---------------- DASHBOARD ---------------- #
 @app.route(DASHBOARD_URL)
