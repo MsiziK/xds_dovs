@@ -3,6 +3,7 @@ import db_access
 DB_FILE = "verifications.db"
 LOG_FILE = "dov_audit_log.txt"
 
+
 def ensure_db_columns():
     """Ensure id_photo and selfie_photo columns exist in verifications table."""
     conn = db_access.get_conn()
@@ -17,6 +18,7 @@ def ensure_db_columns():
 
     conn.commit()
     conn.close()
+
 
 def parse_session_block(block):
     """Extract verification session details from log block."""
@@ -54,6 +56,7 @@ def parse_session_block(block):
             session["selfie_photo"] = line.split("ConsumerCapturedPhoto:")[1].strip()
 
     return session
+
 
 def insert_into_db(session):
     """Insert a parsed session into DB using db_access."""

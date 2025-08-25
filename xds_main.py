@@ -438,4 +438,4 @@ if __name__ == "__main__":
             print("🔗 Verification link (for testing):", link)
         else:
             print("❌ Failed to request facial verification.")
-        
+

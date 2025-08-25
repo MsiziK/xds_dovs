@@ -18,6 +18,7 @@ CREATE TABLE IF NOT EXISTS verifications (
 );
 '''
 
+
 def init_db(db_path: str = DB_FILE):
     conn = sqlite3.connect(db_path)
     c = conn.cursor()
@@ -25,6 +26,7 @@ def init_db(db_path: str = DB_FILE):
     conn.commit()
     conn.close()
     print(f"Database initialized at {db_path}")
+
 
 if __name__ == "__main__":
     init_db()

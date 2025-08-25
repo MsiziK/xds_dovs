@@ -1,6 +1,5 @@
 from flask import Flask, render_template, jsonify, request, send_from_directory, Response
 from flask import redirect, url_for
-import sqlite3
 import os
 from datetime import datetime
 import csv
@@ -42,12 +41,15 @@ def _to_uploads_url(path_value):
 def uploaded_file(filename):
     return send_from_directory(UPLOAD_FOLDER, filename)
 
+
 @app.route("/")
 def root():
-    #Redirect root requests to the main dashboard
+    # Redirect root requests to the main dashboard
     return redirect(url_for("index"))
 
 # ---------------- DASHBOARD ---------------- #
+
+
 @app.route(DASHBOARD_URL)
 def index():
     # --- Collect filters from query params ---
@@ -251,7 +253,7 @@ def export_pdf():
 
     c.setFont("Helvetica", 9)
     for v in logs:
-        line = f"{v.get('timestamp','')} | {v.get('client_id','')} | {v.get('status','')} | {v.get('name','')} | {v.get('id_number','')} | {v.get('email','')}"
+        line = f"{v.get('timestamp', '')} | {v.get('client_id', '')} | {v.get('status', '')} | {v.get('name', '')} | {v.get('id_number', '')} | {v.get('email', '')}"
         c.drawString(30, y, line)
         y -= 15
 
