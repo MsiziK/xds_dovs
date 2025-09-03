@@ -246,6 +246,8 @@ def is_ticket_valid(ticket):
 
 
 def match_consumer(ticket, id_number, cell_number, reference="", voucher_code=""):
+    headers = {"Content-Type": "application/soap+xml; charset=utf-8"}
+    resp = _post_soap(XDS_URL, body, headers)
     body = f"""<?xml version="1.0" encoding="utf-8"?>
 <soap12:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
