@@ -1,2 +1,6 @@
 requests
 python-dotenv
+Flask
+Jinja2
+reportlab
+XlsxWriter
