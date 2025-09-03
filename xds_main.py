@@ -246,8 +246,7 @@ def is_ticket_valid(ticket):
 
 
 def match_consumer(ticket, id_number, cell_number, reference="", voucher_code=""):
-    headers = {"Content-Type": "application/soap+xml; charset=utf-8"}
-    resp = _post_soap(XDS_URL, body, headers)
+    # Build the SOAP 1.2 envelope first
     body = f"""<?xml version="1.0" encoding="utf-8"?>
 <soap12:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
@@ -263,7 +262,12 @@ def match_consumer(ticket, id_number, cell_number, reference="", voucher_code=""
     </ConnectConsumerMatchDOVS>
   </soap12:Body>
 </soap12:Envelope>"""
-    resp = _post_soap(XDS_URL, body)
+
+    # Enforce SOAP 1.2 content type
+    headers = {"Content-Type": "application/soap+xml; charset=utf-8"}
+    resp = _post_soap(XDS_URL, body, headers)
+
+    # Parse the response exactly as you already do
     tree = ET.fromstring(resp.content)
     result_node = tree.find(".//{http://www.web.xds.co.za/XDSConnectWS}ConnectConsumerMatchDOVSResult")
     if result_node is None:
