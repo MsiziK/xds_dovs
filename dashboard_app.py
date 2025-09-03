@@ -19,6 +19,19 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 DASHBOARD_URL = "/admin/dashboard"
 CLIENT_VERIFICATION_URL = "/verify"
 
+@app.route("/healthz")
+def healthz():
+    return "ok", 200
+
+@app.route("/readyz")
+def readyz():
+    try:
+        # Touch the DB to confirm connectivity
+        _ = db_access.fetch_all_verifications()
+        return "ready", 200
+    except Exception as e:
+        return ("not ready: " + str(e)), 500
+        
 
 def get_full_upload_path(path_value):
     """Return the absolute path on disk for any stored upload."""
