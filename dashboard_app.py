@@ -6,7 +6,7 @@ import csv
 import io
 import db_access
 from reportlab.lib.pagesizes import letter
-from reportlab.pdfgen import canvas
+from reportlab.pdfgen import canvas as rl_canvas
 import xlsxwriter
 
 app = Flask(__name__)
@@ -243,7 +243,7 @@ def export_xlsx():
 def export_pdf():
     logs = db_access.fetch_all_verifications()
     output = io.BytesIO()
-    c = canvas.Canvas(output, pagesize=letter)
+    c = rl_canvas.Canvas(output, pagesize=letter)
     width, height = letter
 
     y = height - 40
