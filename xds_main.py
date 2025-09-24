@@ -143,7 +143,6 @@ ensure_audit_log()
 # Constants from .env
 XDS_URL = os.getenv("XDS_URL", "https://www.web.xds.co.za/xdsconnect/XDSConnectWS.asmx?WSDL")
 DEFAULT_PRODUCT_ID = os.getenv("DEFAULT_PRODUCT_ID", "194")
-DEFAULT_REDIRECT_URL = os.getenv("DEFAULT_REDIRECT_URL", "https://lms.neptus.co.za/onlineloans")
 REQUEST_TIMEOUT = int(os.getenv("REQUEST_TIMEOUT", "30"))
 XDS_USER = os.getenv("XDS_USER", "TestUser_DOVS")
 XDS_PASS = os.getenv("XDS_PASS", "xds100")
@@ -438,7 +437,7 @@ if __name__ == "__main__":
 
         print(f"✅ Enquiry IDs received: EnquiryID={enquiry_id}, EnquiryResultID={enquiry_result_id}")
 
-        link = request_facial_verification(ticket, enquiry_id, enquiry_result_id, DEFAULT_REDIRECT_URL)
+        link = request_facial_verification(ticket, enquiry_id, enquiry_result_id)
         if link:
             print("📩 SMS verification link requested successfully!")
             print("🔗 Verification link (for testing):", link)
