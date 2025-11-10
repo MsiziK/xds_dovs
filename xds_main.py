@@ -221,6 +221,7 @@ def login_to_xds(username: str | None = None, password: str | None = None) -> st
   </soap12:Body>
 </soap12:Envelope>"""
     resp = _post_soap(XDS_URL, body, headers)
+    print("XDS Login raw response:\n", resp.text)
     tree = ET.fromstring(resp.content)
     ticket = tree.find(".//{http://www.web.xds.co.za/XDSConnectWS}LoginResult")
     return ticket.text if ticket is not None else ""
