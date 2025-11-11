@@ -438,7 +438,7 @@ if __name__ == "__main__":
 
         print(f"✅ Enquiry IDs received: EnquiryID={enquiry_id}, EnquiryResultID={enquiry_result_id}")
 
-        link = request_facial_verification(ticket, enquiry_id, enquiry_result_id)
+        link = request_facial_verification(ticket, enquiry_id, enquiry_result_id, redirect_url="")
         if link:
             print("📩 SMS verification link requested successfully!")
             print("🔗 Verification link (for testing):", link)
