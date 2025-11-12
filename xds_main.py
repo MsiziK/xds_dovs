@@ -278,24 +278,36 @@ def match_consumer(ticket, id_number, cell_number, reference="", voucher_code=""
     return {"xml": result_node.text, "enquiry_id": enquiry_id, "enquiry_result_id": enquiry_result_id}
 
 
-def request_facial_verification(ticket, enquiry_id, enquiry_result_id, redirect_url):
-    headers = {"SOAPAction": "http://www.web.xds.co.za/XDSConnectWS/ConnectDOVRequest"}
+def request_facial_verification(ticket, enquiry_id, enquiry_result_id, redirect_url=""):
+    """
+    Initiates the DOVS facial verification request with XDS.
+    Per XDS production spec, RedirectURL must be blank.
+    """
+    # --- SOAP 1.2 header (preferred) ---
+    headers = {"Content-Type": "application/soap+xml; charset=utf-8"}
+
+    # --- SOAP 1.2 envelope ---
     body = f"""<?xml version="1.0" encoding="utf-8"?>
-<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-               xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-               xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
-  <soap:Body>
-    <ConnectDOVRequest xmlns="http://www.web.xds.co.za/XDSConnectWS">
-      <ConnectTicket>{ticket}</ConnectTicket>
-      <EnquiryID>{enquiry_id}</EnquiryID>
-      <EnquiryResultID>{enquiry_result_id}</EnquiryResultID>
-      <ProductID>{DEFAULT_PRODUCT_ID}</ProductID>
-      <RedirectURL>{redirect_url}</RedirectURL>
-    </ConnectDOVRequest>
-  </soap:Body>
-</soap:Envelope>"""
+    <soap12:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                     xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+                     xmlns:soap12="http://www.w3.org/2003/05/soap-envelope">
+      <soap12:Body>
+        <ConnectDOVRequest xmlns="http://www.web.xds.co.za/XDSConnectWS">
+          <ConnectTicket>{ticket}</ConnectTicket>
+          <EnquiryID>{enquiry_id}</EnquiryID>
+          <EnquiryResultID>{enquiry_result_id}</EnquiryResultID>
+          <ProductID>{DEFAULT_PRODUCT_ID}</ProductID>
+          <RedirectURL>{redirect_url}</RedirectURL>
+        </ConnectDOVRequest>
+      </soap12:Body>
+    </soap12:Envelope>"""
+
     resp = _post_soap(XDS_URL, body, headers)
-    tree = ET.fromstring(resp.content)
+    resp.raise_for_status()
+    xml_resp = resp.text
+    print("XDS Facial Verification Response:\n", xml_resp)
+
+    tree = ET.fromstring(xml_resp)
     result = tree.find(".//{http://www.web.xds.co.za/XDSConnectWS}ConnectDOVRequestResult")
     return result.text if result is not None else ""
 
