@@ -443,7 +443,7 @@ if __name__ == "__main__":
     safe_ticket = ticket[:8] + "..." + ticket[-8:] if ticket else "None"
     logging.info(f"XDS Ticket: {safe_ticket}")
     validation_result = is_ticket_valid(ticket)
-    logging.info("Ticket Validation Result:", validation_result)
+    logging.info(f"Ticket Validation Result: {validation_result}")
 
     id_number = "9104036161082"
     if verified_within_last_3_months(id_number):
@@ -464,6 +464,6 @@ if __name__ == "__main__":
         link = request_facial_verification(ticket, enquiry_id, enquiry_result_id, redirect_url="")
         if link:
             logging.info("📩 SMS verification link requested successfully!")
-            logging.info("🔗 Verification link (for testing):", link)
+            logging.info(f"🔗 Verification link (for testing): {link}")
         else:
             logging.error("❌ Failed to request facial verification.")
