@@ -232,7 +232,7 @@ def login_to_xds(username: str | None = None, password: str | None = None) -> st
   </soap12:Body>
 </soap12:Envelope>"""
     resp = _post_soap(XDS_URL, body, headers)
-    logging.info("XDS Login raw response:\n", resp.text)
+    logging.info("XDS Login raw response [truncated]: %s", resp.text[:400])
     tree = ET.fromstring(resp.content)
     ticket = tree.find(".//{http://www.web.xds.co.za/XDSConnectWS}LoginResult")
     return ticket.text if ticket is not None else ""
@@ -316,8 +316,7 @@ def request_facial_verification(ticket, enquiry_id, enquiry_result_id, redirect_
     resp = _post_soap(XDS_URL, body, headers)
     resp.raise_for_status()
     xml_resp = resp.text
-    logging.info("XDS Facial Verification Response:\n", xml_resp)
-
+    logging.info("XDS Facial Verification Response [truncated]: %s", xml_resp[:400])
     tree = ET.fromstring(xml_resp)
     result = tree.find(".//{http://www.web.xds.co.za/XDSConnectWS}ConnectDOVRequestResult")
     return result.text if result is not None else ""
