@@ -9,6 +9,17 @@ from datetime import datetime, timedelta
 from dotenv import load_dotenv
 import logging
 from typing import Tuple
+from loggin.handlers import RotatingFileHandler
+
+# --- Logging setup ---
+handler = RotatingFileHandler(
+    "xds_dovs.log", maxBytes=5_000_000, backupCount=3
+)
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(message)s",
+    handlers=[handler]
+)
 
 # Load environment variables
 load_dotenv()
@@ -198,11 +209,11 @@ def log_verification_result(enquiry_id, enquiry_result_id, summary_dict, status,
 
 
 def print_verification_status(status, summary=None):
-    print("\n📣 Verification Status:", status)
+    logging.info("\n📣 Verification Status:", status)
     if summary:
-        print("🔍 Summary:")
+        logging.info("🔍 Summary:")
         for k, v in summary.items():
-            print(f"  {k}: {v}")
+            logging.info(f"  {k}: {v}")
 
 
 def login_to_xds(username: str | None = None, password: str | None = None) -> str:
@@ -221,7 +232,7 @@ def login_to_xds(username: str | None = None, password: str | None = None) -> st
   </soap12:Body>
 </soap12:Envelope>"""
     resp = _post_soap(XDS_URL, body, headers)
-    print("XDS Login raw response:\n", resp.text)
+    logging.info("XDS Login raw response:\n", resp.text)
     tree = ET.fromstring(resp.content)
     ticket = tree.find(".//{http://www.web.xds.co.za/XDSConnectWS}LoginResult")
     return ticket.text if ticket is not None else ""
@@ -305,7 +316,7 @@ def request_facial_verification(ticket, enquiry_id, enquiry_result_id, redirect_
     resp = _post_soap(XDS_URL, body, headers)
     resp.raise_for_status()
     xml_resp = resp.text
-    print("XDS Facial Verification Response:\n", xml_resp)
+    logging.info("XDS Facial Verification Response:\n", xml_resp)
 
     tree = ET.fromstring(xml_resp)
     result = tree.find(".//{http://www.web.xds.co.za/XDSConnectWS}ConnectDOVRequestResult")
@@ -350,9 +361,9 @@ def summarize_consumer_info(xml_data):
             "Privacy Status": details.findtext('PrivacyStatus', 'N/A'),
             "Verification Reference": details.findtext('ReferenceNo', 'N/A'),
         }
-        print("\n✅ Consumer Summary:")
+        logging.info("\n✅ Consumer Summary:")
         for k, v in summary.items():
-            print(f"{k}: {v}")
+            logging.info(f"{k}: {v}")
         return summary
     except Exception:
         logger.exception("Error parsing XML for consumer info")
@@ -360,7 +371,7 @@ def summarize_consumer_info(xml_data):
 
 
 def poll_dov_result(ticket, enquiry_id, max_attempts=30, interval=10):
-    print("🔄 Polling DOV result...")
+    logging.info("🔄 Polling DOV result...")
     for attempt in range(max_attempts):
         try:
             dov_result = get_dov_result(ticket, enquiry_id)
@@ -368,9 +379,9 @@ def poll_dov_result(ticket, enquiry_id, max_attempts=30, interval=10):
             logger.exception("Error calling get_dov_result")
             dov_result = ""
         if dov_result and "<NoResult>" not in dov_result:
-            print(f"DOV Result found on attempt {attempt + 1}:")
+            logging.info(f"DOV Result found on attempt {attempt + 1}:")
             return dov_result
-        print(f"Attempt {attempt + 1}: No result yet. Retrying in {interval} seconds...")
+        logging.info(f"Attempt {attempt + 1}: No result yet. Retrying in {interval} seconds...")
         time.sleep(interval)
     return "⛔ DOV Result polling timed out after multiple attempts."
 
@@ -392,7 +403,7 @@ def insert_verification_to_db(enquiry_id, summary_data, id_photo_data=None, self
         selfie_photo=selfie_photo_path
     )
 
-    print("✅ Verification inserted into database with photos via db_access.")
+    logging.info("✅ Verification inserted into database with photos via db_access.")
 
 
 def extract_photos_from_xml(xml: str) -> Tuple[str | None, str | None]:
@@ -431,29 +442,29 @@ if __name__ == "__main__":
     cell_number = "0732563864"
     ticket = login_to_xds()
     safe_ticket = ticket[:8] + "..." + ticket[-8:] if ticket else "None"
-    print(f"XDS Ticket: {safe_ticket}")
+    logging.info(f"XDS Ticket: {safe_ticket}")
     validation_result = is_ticket_valid(ticket)
-    print("Ticket Validation Result:", validation_result)
+    logging.info("Ticket Validation Result:", validation_result)
 
     id_number = "9104036161082"
     if verified_within_last_3_months(id_number):
-        print(f"ID {id_number} already verified in the last 3 months.")
+        logging.info(f"ID {id_number} already verified in the last 3 months.")
     else:
-        print(f"Proceeding with new verification for {id_number}.")
+        logging.info(f"Proceeding with new verification for {id_number}.")
 
         match_result = match_consumer(ticket, id_number, cell_number)
         enquiry_id = match_result.get("enquiry_id")
         enquiry_result_id = match_result.get("enquiry_result_id")
 
         if not (enquiry_id and enquiry_result_id):
-            print("❌ Failed to get enquiry IDs from XDS:", match_result)
+            logging.error("❌ Failed to get enquiry IDs from XDS:", match_result)
             exit(1)
 
-        print(f"✅ Enquiry IDs received: EnquiryID={enquiry_id}, EnquiryResultID={enquiry_result_id}")
+        logging.info(f"✅ Enquiry IDs received: EnquiryID={enquiry_id}, EnquiryResultID={enquiry_result_id}")
 
         link = request_facial_verification(ticket, enquiry_id, enquiry_result_id, redirect_url="")
         if link:
-            print("📩 SMS verification link requested successfully!")
-            print("🔗 Verification link (for testing):", link)
+            logging.info("📩 SMS verification link requested successfully!")
+            logging.info("🔗 Verification link (for testing):", link)
         else:
-            print("❌ Failed to request facial verification.")
+            logging.error("❌ Failed to request facial verification.")
