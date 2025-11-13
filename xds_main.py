@@ -465,5 +465,6 @@ if __name__ == "__main__":
         if link:
             logging.info("📩 SMS verification link requested successfully!")
             logging.info(f"🔗 Verification link (for testing): {link}")
+            logging.info("✅ Verification cycle completed successfully.\n" + "-" * 80)
         else:
             logging.error("❌ Failed to request facial verification.")
