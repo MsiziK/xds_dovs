@@ -430,7 +430,8 @@ if __name__ == "__main__":
     id_number = "9104036161082"
     cell_number = "0732563864"
     ticket = login_to_xds()
-    print("XDS Ticket:", ticket)
+    safe_ticket = ticket[:8] + "..." + ticket[-8:] if ticket else "None"
+    print(f"XDS Ticket: {safe_ticket}")
     validation_result = is_ticket_valid(ticket)
     print("Ticket Validation Result:", validation_result)
 
