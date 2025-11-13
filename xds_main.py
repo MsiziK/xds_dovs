@@ -9,7 +9,7 @@ from datetime import datetime, timedelta
 from dotenv import load_dotenv
 import logging
 from typing import Tuple
-from loggin.handlers import RotatingFileHandler
+from logging.handlers import RotatingFileHandler
 
 # --- Logging setup ---
 handler = RotatingFileHandler(
