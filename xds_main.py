@@ -209,7 +209,7 @@ def log_verification_result(enquiry_id, enquiry_result_id, summary_dict, status,
 
 
 def print_verification_status(status, summary=None):
-    logging.info("\n📣 Verification Status:", status)
+    logging.info(f"📣 Verification Status: {status}")
     if summary:
         logging.info("🔍 Summary:")
         for k, v in summary.items():
